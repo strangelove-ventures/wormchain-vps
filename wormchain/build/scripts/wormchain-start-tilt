@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DEFAULT_TILT_HOST="0.0.0.0"
+DEFAULT_TILT_PORT=10350
+DEFAULT_TILT_FILE="Tiltfile"
+
+usage() {
+  cat <<EOF
+Usage:
+  wormchain-start-tilt [flags]
+
+  Starts minikube (if not already running) in a configuration ideal for working with Wormchain development containers. Then starts Tilt with the configuration found in the Tiltfile in the current directory.
+
+Flags:
+  --help              print this help message
+  --tilt-host         the host to use for Tilt (default: ${DEFAULT_TILT_HOST})
+  --tilt-port         the port to use for Tilt (default: ${DEFAULT_TILT_PORT})
+  --tilt-file         the path to the Tiltfile to use (default: ${DEFAULT_TILT_FILE})
+  --tilt-stream       stream the Tilt logs to stdout
+
+Examples:
+  > wormchain-start-tilt --tilt-host ${DEFAULT_TILT_HOST} --tilt-port ${DEFAULT_TILT_PORT} --tilt-file ${DEFAULT_TILT_FILE} --tilt-stream
+EOF
+}
+
+main() {
+  local tilt_host="${DEFAULT_TILT_HOST}"
+  local tilt_port="${DEFAULT_TILT_PORT}"
+  local tilt_file="${DEFAULT_TILT_FILE}"
+  local tilt_stream=""
+  local unknown_args=()
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    --help)
+      usage
+      exit 1
+      ;;
+    --tilt-host)
+      tilt_host="$2"
+      shift 2
+      ;;
+    --tilt-port)
+      tilt_port="$2"
+      shift 2
+      ;;
+    --tilt-file)
+      tilt_file="$2"
+      shift 2
+      ;;
+    --tilt-stream)
+      tilt_stream="--stream"
+      shift
+      ;;
+    *)
+      unknown_args+=("$1")
+      shift
+      ;;
+    esac
+  done
+
+  # check if minikube is running
+  if ! minikube status &> /dev/null; then
+    echo "Minikube is not running, starting it now with the default wormchain-start-minikube parameters..."
+    wormchain-start-minikube
+  fi
+
+  echo "Starting Tilt with port ${tilt_port}"
+  if [[ "${#unknown_args[@]}" -gt 0 ]]; then
+    echo "Extra args (passed directly to Tilt): ${unknown_args[@]}"
+  fi
+
+  tilt up --host=${tilt_host} --port="${tilt_port}" --file="${tilt_file}" ${tilt_stream} "${unknown_args[@]}"
+}
+
+main "$@"

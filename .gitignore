@@ -1,0 +1,6 @@
+.terraform
+*bup*
+*.pub
+log.txt
+*.secret.hcl
+*.secret.tf

@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DEFAULT_KUBERNETES_VERION="v1.22.3" # This version is confirmed working with Tilt, other versions run into an unknown "networking issue" that prevents Tilt from working
+DEFAULT_MINIKUBE_DRIVER="docker"
+
+usage() {
+  cat <<EOF
+Usage:
+  wormchain-start-minikube [flags]
+
+  Starts minikube in a configuration ideal for working with Wormchain development containers.
+
+Flags:
+  --help              print this help message
+  --kubernetes-version the version of Kubernetes to use (default: ${DEFAULT_KUBERNETES_VERION})
+  --driver   the driver to use for minikube (default: ${DEFAULT_MINIKUBE_DRIVER})
+
+Examples:
+  > wormchain-start-minikube --kubernetes-version v1.22.3 --driver docker
+EOF
+}
+
+main() {
+  local kubernetes_version="${DEFAULT_KUBERNETES_VERION}"
+  local minikube_driver="${DEFAULT_MINIKUBE_DRIVER}"
+  local unknown_args=()
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    --help)
+      usage
+      exit 1
+      ;;
+    --kubernetes-version)
+      kubernetes_version="$2"
+      shift 2
+      ;;
+    --driver)
+      minikube_driver="$2"
+      shift 2
+      ;;
+    *)
+      unknown_args+=("$1")
+      shift
+      ;;
+    esac
+  done
+
+  echo "Starting minikube with Kubernetes version ${kubernetes_version} and driver ${minikube_driver}"
+  if [[ "${#unknown_args[@]}" -gt 0 ]]; then
+    echo "Extra args (passed directly to minikube): ${unknown_args[@]}"
+  fi
+
+  minikube start --kubernetes-version="${kubernetes_version}" --driver="${minikube_driver}" "${unknown_args[@]}"
+}
+
+main "$@"
