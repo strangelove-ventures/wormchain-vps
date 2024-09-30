@@ -12,13 +12,14 @@ After installing packer, navigate to this subdirectory and run the following com
 
 ```bash
 # Initialize the Docker plugin
+cd build/
 packer init wormchain.docker.pkr.hcl
 # Initialize the Google Compute Engine plugin
 packer init wormchain.gcp.pkr.hcl
 ```
 
 ### Variable Preperation
-
+cd wormchain/
 The variables required by the Packer specification can be found in the [wormchain.variables.pkr.hcl](./build/wormchain.variables.pkr.hcl) file. The variables have  most of the values pre-defined in the [variables.hcl](./variables.hcl) file.
 
 Some variables are not included in the repo by default, and must be defined beforehand and passed to the Packer build command. A template file is provided at [variables.secret.hcl.template](./variables.secret.hcl.template) for this purpose. Copy this file to `variables.secret.hcl` and fill in the values for the missing variables.
@@ -40,6 +41,7 @@ After making changes to the docker.pkr.hcl file, run the following command to re
 
 ```
 # Build the image using the local helper script, logs are written to log.txt in the current directory for inspection
+cd wormchain/
 ./build-image.docker.sh
 
 # Run the image for inspection if needed
@@ -65,6 +67,7 @@ After making changes to the wormchain.gcp.pkr.hcl file, run the following comman
 
 ```bash
 # Build the image using the local helper script, logs are written to log.txt in the current directory for inspection
+cd deploy/
 ./build-image.gcp.sh
 
 # The image will be built in the GCP project, navigate to your GCP project to see the image
